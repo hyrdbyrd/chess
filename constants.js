@@ -1,5 +1,4 @@
 ((exporter) => {
-    /** @enum {} */
     const TYPES = {
         HORSE: 'horse',
         KING: 'king',
@@ -55,14 +54,111 @@
         [e,       e,       e,       e,       e,       e,       e,       e      ],
         [lcci(p), lcci(p), lcci(p), lcci(p), lcci(p), lcci(p), lcci(p), lcci(p)],
         [lcci(r), lcci(h), lcci(b), lcci(q), lcci(k), lcci(b), lcci(h), lcci(r)],
-    ];
+    ].map(row => row.map(e => ({ ...e })));
 
-    START_CHESS_BOARD.map(row =>
-        row.map(e => ({ ...e }))
-    );
+    const getChessFrom = chessBoard => (x, y) => chessBoard[y]
+        ? chessBoard[y][x]
+            ? chessBoard[y][x]
+            : null
+        : null;
+
+    const forhead = chessBoard => (colorPlayer, x, y, options = {}) => {
+        const result = { toAttack: false, toGo: false, empty: false };
+
+        const enemy = getChessFrom(chessBoard)(x, y);
+        if (enemy === null) return result;
+
+        const { canAttack = true, canGo = true } = options;
+
+        const { type, color: colorEnemy } = enemy;
+
+        if (colorPlayer === colorEnemy) {
+            enemy.canNot = true;
+            result.toAttack = true;
+            return result;
+        }
+
+        switch (type) {
+            case TYPES.EMPTY: {
+                if (canGo) {
+                    enemy.canGo = true;
+                    result.toGo = true;
+                }
+
+                return result;
+            }
+
+            case TYPES.HORSE:
+            case TYPES.QUEEN:
+            case TYPES.BISHOP:
+            case TYPES.KING:
+            case TYPES.PAWN:
+            case TYPES.ROOK: {
+                if (canAttack) {
+                    enemy.attacked = true;
+                    result.toAttack = true;
+                }
+
+                return result;
+            }
+
+            default: return result;
+        }
+    };
+
+    const diagonal = chessBoard => (color, x, y) => {
+        const move = forhead(chessBoard);
+
+        // actual x
+        const ax = x;
+        // actual y
+        const ay = y;
+
+        const dims = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+        dims.forEach(([dirX, dirY]) => {
+            let dx = ax;
+            let dy = ay;
+
+            while (chessBoard[dy] && chessBoard[dy][dx]) {
+                dx += dirX;
+                dy += dirY;
+
+                if (move(color, dx, dy).toAttack) break;
+            }
+        });
+    };
+
+    const line = chessBoard => (color, x, y) => {
+        const move = forhead(chessBoard);
+
+        // actual x
+        const ax = x;
+        // actual y
+        const ay = y;
+
+        const dims = [[1,  0], [-1, 0], [0,  1], [0, -1]];
+        dims.forEach(([dirX, dirY]) => {
+            let dx = ax;
+            let dy = ay;
+
+            while (chessBoard[dy] && chessBoard[dy][dx]) {
+                dx += dirX;
+                dy += dirY;
+
+                if (move(color, dx, dy).toAttack) break;
+            }
+        });
+    };
+
+    const MOVES = {
+        diagonal,
+        forhead,
+        line
+    };
 
     exporter.CONSTANTS = {
         TYPES,
+        MOVES,
         COLORS,
         CHESS_FIGURES,
         START_CHESS_BOARD

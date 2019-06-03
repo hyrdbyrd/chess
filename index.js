@@ -1,4 +1,4 @@
-const { CONSTANTS: { START_CHESS_BOARD, TYPES, CHESS_FIGURES, COLORS } } = window;
+const { CONSTANTS: { START_CHESS_BOARD, TYPES, CHESS_FIGURES, COLORS, MOVES } } = window;
 
 const width = 512;
 
@@ -21,11 +21,8 @@ imgElem.onload = () => {
 
     const chessBoard = START_CHESS_BOARD.map(row => row.map(e => ({...e})));
 
-    const getChessFrom = (x, y) => chessBoard[y]
-        ? chessBoard[y][x]
-            ? chessBoard[y][x]
-            : null
-        : null;
+    for (const key in MOVES) MOVES[key] = MOVES[key](chessBoard);
+    const { diagonal, forhead, line } = MOVES;
 
     // Grid block width
     const gw = width / 16;
@@ -70,34 +67,6 @@ imgElem.onload = () => {
         });
     };
 
-    const forhead = (colorPlayer, x, y) => {
-        const enemy = getChessFrom(x, y);
-        if (enemy === null) return;
-
-        const { type, color: colorEnemy } = enemy;
-
-        if (colorPlayer === colorEnemy) {
-            enemy.canNot = true;
-            return;
-        }
-
-        switch (type) {
-            case TYPES.EMPTY: {
-                enemy.canGo = true;
-                break;
-            }
-            case TYPES.HORSE:
-            case TYPES.QUEEN:
-            case TYPES.BISHOP:
-            case TYPES.KING:
-            case TYPES.PAWN:
-            case TYPES.ROOK: {
-                enemy.attacked = true;
-                return;
-            }
-        }
-    };
-
     const doMagic = () => {
         const [x, y] = player.pos;
         const [px, py] = player.prevPos;
@@ -120,41 +89,61 @@ imgElem.onload = () => {
 
         clearItems();
 
-        switch (type) {
-            case TYPES.HORSE: {
-                forhead(color, x - 2, y - 1);
-                forhead(color, x - 2, y + 1);
-                forhead(color, x + 2, y - 1);
-                forhead(color, x + 2, y + 1);
-                forhead(color, x - 1, y + 2);
-                forhead(color, x - 1, y - 2);
-                forhead(color, x + 1, y - 2);
-                forhead(color, x + 1, y + 2);
+        const move = forhead.bind(null, color);
 
-                return;
+        switch (type) {
+            case TYPES.BISHOP: {
+                diagonal(color, x, y);
+
+                break;
+            }
+            case TYPES.ROOK: {
+                line(color, x, y);
+
+                break;
+            }
+            case TYPES.QUEEN: {
+                diagonal(color, x, y);
+                line(color, x, y);
+
+                break;
+            }
+            case TYPES.HORSE: {
+                move(x - 2, y - 1);
+                move(x - 2, y + 1);
+                move(x + 2, y - 1);
+                move(x + 2, y + 1);
+                move(x - 1, y + 2);
+                move(x - 1, y - 2);
+                move(x + 1, y - 2);
+                move(x + 1, y + 2);
+
+                break;
             }
             case TYPES.PAWN: {
                 const vec = color === COLORS.WHITE ? -1 : 1;
 
-                forhead(color, x, y + vec);
-
+                move(x, y + vec, { canAttack: false });
                 if (!moved) {
-                    forhead(color, x, y + 2 * vec);
-
-                    const di1 = getChessFrom(x + 1, y + 2 * vec);
-                    const di2 = getChessFrom(x - 1, y + 2 * vec);
+                    move(x, y + 2 * vec, { canAttack: false });
                 }
 
-                const di1 = getChessFrom(x + 1, y + vec);
-                const di2 = getChessFrom(x - 1, y + vec);
+                move(x + 1, y + vec, { canGo: false });
+                move(x - 1, y + vec, { canGo: false });
 
-                if (di1 && di1.type !== TYPES.EMPTY && di1.color !== color) {
-                     forhead(color, x + 1, y + vec);
-                }
+                break;
+            }
+            case TYPES.KING: {
+                move(x, y - 1);
+                move(x, y + 1);
+                move(x - 1, y);
+                move(x + 1, y);
+                move(x + 1, y + 1);
+                move(x + 1, y - 1);
+                move(x - 1, y + 1);
+                move(x - 1, y - 1);
 
-                if (di2 && di2.type !== TYPES.EMPTY && di2.color !== color) {
-                    forhead(color, x - 1, y + vec);
-                }
+                break;
             }
         }
     };
