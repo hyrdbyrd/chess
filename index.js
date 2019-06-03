@@ -7,7 +7,7 @@ const score = { [COLORS.WHITE]: 0, [COLORS.BLACK]: 0 };
 const imgElem = new Image(1800, 800);
 imgElem.src = 'chess.png';
 
-const player = { focus: false, pos: [0, 0] };
+const player = { focus: false, pos: [0, 0], turn: COLORS.WHITE };
 
 imgElem.onload = () => {
     const chessElem = document.querySelector('.chess');
@@ -35,7 +35,7 @@ imgElem.onload = () => {
            row.forEach(item => {
                item.canGo = false;
                item.canNot = false;
-              item.attacked = false;
+               item.attacked = false;
            });
         });
     };
@@ -67,9 +67,10 @@ imgElem.onload = () => {
         });
     };
 
-    const doMagic = () => {
-        const [x, y] = player.pos;
-        const [px, py] = player.prevPos;
+    const handler = () => {
+        const { pos, prevPos, turn } = player;
+        const [x, y] = pos;
+        const [px, py] = prevPos;
 
         const { type, color, canGo, attacked, moved } = chessBoard[y][x];
 
@@ -85,9 +86,17 @@ imgElem.onload = () => {
             chessBoard[py][px] = { ...CHESS_FIGURES.e };
 
             chessBoard[y][x].moved = true;
+
+            clearItems();
+            player.turn = turn === COLORS.WHITE ? COLORS.BLACK : COLORS.WHITE;
+            return;
         }
 
         clearItems();
+
+        if (turn !== color) {
+            return;
+        }
 
         const move = forhead.bind(null, color);
 
@@ -161,7 +170,7 @@ imgElem.onload = () => {
                 (event.y - chessElem.offsetTop) / gw / 1.9 | 0
             ];
 
-            doMagic();
+            handler();
             paint();
         } else player.focus = false;
     });

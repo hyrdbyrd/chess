@@ -14,7 +14,7 @@
         WHITE: 'white',
         FOCUS: 'blue',
         ATTACK: 'red',
-        CAN_NOT: 'darkgray',
+        CAN_NOT: 'white',
         CAN_GO: 'lightblue'
     };
 
@@ -87,7 +87,6 @@
 
                 return result;
             }
-
             case TYPES.HORSE:
             case TYPES.QUEEN:
             case TYPES.BISHOP:
@@ -101,7 +100,6 @@
 
                 return result;
             }
-
             default: return result;
         }
     };
