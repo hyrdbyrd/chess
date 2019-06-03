@@ -106,15 +106,12 @@
         }
     };
 
-    const diagonal = chessBoard => (color, x, y) => {
+    const formulaMove = chessBoard => dims => (color, x, y) => {
         const move = forhead(chessBoard);
 
-        // actual x
-        const ax = x;
-        // actual y
-        const ay = y;
+        const ax = x; // actual x
+        const ay = y; // actual y
 
-        const dims = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
         dims.forEach(([dirX, dirY]) => {
             let dx = ax;
             let dy = ay;
@@ -128,33 +125,10 @@
         });
     };
 
-    const line = chessBoard => (color, x, y) => {
-        const move = forhead(chessBoard);
+    const diagonal = chessBoard => formulaMove(chessBoard)([[1, 1], [1, -1], [-1, 1], [-1, -1]]);
+    const line = chessBoard => formulaMove(chessBoard)([[1, 0], [-1, 0], [0, 1], [0, -1]]);
 
-        // actual x
-        const ax = x;
-        // actual y
-        const ay = y;
-
-        const dims = [[1,  0], [-1, 0], [0,  1], [0, -1]];
-        dims.forEach(([dirX, dirY]) => {
-            let dx = ax;
-            let dy = ay;
-
-            while (chessBoard[dy] && chessBoard[dy][dx]) {
-                dx += dirX;
-                dy += dirY;
-
-                if (move(color, dx, dy).toAttack) break;
-            }
-        });
-    };
-
-    const MOVES = {
-        diagonal,
-        forhead,
-        line
-    };
+    const MOVES = { diagonal, forhead, line };
 
     exporter.CONSTANTS = {
         TYPES,
