@@ -1,3 +1,5 @@
+(() => {
+
 const { CONSTANTS: { START_CHESS_BOARD, TYPES, CHESS_FIGURES, COLORS, MOVES } } = window;
 
 const width = 512;
@@ -32,11 +34,11 @@ imgElem.onload = () => {
 
     const clearItems = () => {
         chessBoard.forEach(row => {
-           row.forEach(item => {
-               item.canGo = false;
-               item.canNot = false;
-               item.attacked = false;
-           });
+            row.forEach(item => {
+                item.canGo = false;
+                item.canNot = false;
+                item.attacked = false;
+            });
         });
     };
 
@@ -177,3 +179,5 @@ imgElem.onload = () => {
 
     paint();
 };
+
+})();
